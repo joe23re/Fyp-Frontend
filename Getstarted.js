@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -12,13 +12,29 @@ import {
 } from "react-native";
 
 import { Ionicons } from "@expo/vector-icons";
+import { Asset } from "expo-asset";
 
-import Logo from "./assets/logo.png";
+import Logo from "./assets/logo-vagdiag.png";
 import Background from "./assets/getstarted.png";
 
 const screenWidth = Dimensions.get("window").width;
 
-export default function Getstarted({navigation}) {
+export default function Getstarted({ navigation }) {
+  const [imagesReady, setImagesReady] = useState(false);
+
+  useEffect(() => {
+    async function loadImages() {
+      await Asset.loadAsync([Logo, Background]);
+      setImagesReady(true);
+    }
+
+    loadImages();
+  }, []);
+
+  if (!imagesReady) {
+    return null;
+  }
+
   return (
     <View style={styles.mainScreen}>
       <StatusBar translucent backgroundColor="transparent" />
@@ -57,7 +73,11 @@ export default function Getstarted({navigation}) {
             specifically for Audi and Volkswagen vehicles.
           </Text>
 
-          <TouchableOpacity style={styles.button} activeOpacity={0.8} onPress={()=>navigation.navigate("Signup")}>
+          <TouchableOpacity
+            style={styles.button}
+            activeOpacity={0.8}
+            onPress={() => navigation.navigate("Signup")}
+          >
             <View style={styles.leftCircle}>
               <Ionicons name="chevron-forward" size={32} color="#d8d8d8" />
             </View>
@@ -94,9 +114,9 @@ const styles = StyleSheet.create({
 
   logo: {
     width: 110,
-    height: 65,
+    height: 115,
     marginLeft: 20,
-    marginTop: 40,
+    marginTop: 20,
   },
 
   boxOne: {

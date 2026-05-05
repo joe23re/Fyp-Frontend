@@ -8,6 +8,7 @@ import PhoneNumberForForgetPassword from './PhoneNumberForForgetPassword';
 import OtpForForgetPassword from './OtpForForgetPassword';
 import ResetPassword from './ResetPassword';
 import Getstarted from './Getstarted';
+import AddCar from './AddCar';
 import { useEffect } from 'react';
 import{ useFonts, Outfit_700Bold} from "@expo-google-fonts/outfit";
 import { LinearGradient } from 'expo-linear-gradient';
@@ -25,7 +26,7 @@ const SplashScreen=({navigation})=>{
 
 return(
      <LinearGradient colors={['#e5e8ef','#B0BFF8']} style={styles.background}>
-      <Image source={require('./assets/logo.png')} style={styles.img}></Image>
+      <Image source={require('./assets/logo-vagdiag.png')} style={styles.img}></Image>
      </LinearGradient>
 )
 }
@@ -58,6 +59,8 @@ export default function App() {
         <Stack.Screen name='ResetPassword' component={ResetPassword} options={{headerShown:false}}></Stack.Screen>
         <Stack.Screen name='Home' component={Home} options={{headerShown:false}} ></Stack.Screen>
         <Stack.Screen name='Getstarted' component={Getstarted} options={{headerShown:false}}></Stack.Screen>
+        <Stack.Screen name='AddCar' component={AddCar} options={{headerShown:false}}></Stack.Screen>
+
                 
       </Stack.Navigator>
       
@@ -75,8 +78,8 @@ const styles=StyleSheet.create({
   },
   
   img:{
-    width:190,
-    height:190,
+    width:290,
+    height:290,
   },
 
   logotext:{
