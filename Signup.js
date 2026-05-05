@@ -8,6 +8,8 @@ import {
   Image,
   Dimensions,
   SafeAreaView,
+  Alert,
+  ActivityIndicator,
 } from "react-native";
 
 import { useState, useEffect } from "react";
@@ -15,11 +17,21 @@ import { Ionicons } from "@expo/vector-icons";
 import { Asset } from "expo-asset";
 import Logo from "./assets/logo1.png";
 
+import { register } from "./src/api/auth";
+
 const screenWidth = Dimensions.get("window").width;
 
 export default function Signup({ navigation }) {
   const [checked, setChecked] = useState(false);
   const [logoReady, setLogoReady] = useState(false);
+
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     async function loadLogo() {
@@ -30,10 +42,46 @@ export default function Signup({ navigation }) {
     loadLogo();
   }, []);
 
-  if (!logoReady) {
-    return null;
+  async function handleSignup() {
+  if (!username || !email || !phoneNumber || !password || !confirmPassword) {
+    Alert.alert("Missing fields", "Please fill all required fields.");
+    return;
   }
 
+  if (password !== confirmPassword) {
+    Alert.alert("Password error", "Passwords do not match.");
+    return;
+  }
+
+  if (!checked) {
+    Alert.alert("Terms required", "Please agree to the Terms and Conditions.");
+    return;
+  }
+
+  try {
+    setLoading(true);
+
+    console.log("Before register:", {
+      username,
+      email,
+      phoneNumber,
+      password,
+      confirmPassword,
+    });
+
+    const data = await register(username, email, phoneNumber, password);
+
+    console.log("Registered user:", data.user);
+
+    Alert.alert("Success", "Account created successfully.");
+    navigation.navigate("Home");
+  } catch (error) {
+    console.log("Signup error:", error);
+    Alert.alert("Signup failed", error.message);
+  } finally {
+    setLoading(false);
+  }
+}
   return (
     <SafeAreaView style={styles.mainScreen}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -55,10 +103,30 @@ export default function Signup({ navigation }) {
                 style={styles.inputIcon}
               />
               <TextInput
-                style={styles.input}
-                placeholder="Username"
-                placeholderTextColor="#c5c8d3"
+              style={styles.input}
+              placeholder="Username"
+              placeholderTextColor="#c5c8d3"
+              value={username}
+              onChangeText={setUsername}
               />
+            </View>
+
+            <View style={styles.inputBox}>
+              <Ionicons
+                name="mail"
+                size={18}
+                color="#b8c7ff"
+                style={styles.inputIcon}
+              />
+             <TextInput
+             style={styles.input}
+             placeholder="Email Address"
+             placeholderTextColor="#c5c8d3"
+             value={email}
+             onChangeText={setEmail}
+             keyboardType="email-address"
+             autoCapitalize="none"
+             />
             </View>
 
             <View style={styles.inputBox}>
@@ -68,12 +136,14 @@ export default function Signup({ navigation }) {
                 color="#b8c7ff"
                 style={styles.inputIcon}
               />
-              <TextInput
-                style={styles.input}
-                placeholder="Phone Number"
-                placeholderTextColor="#c5c8d3"
-                keyboardType="phone-pad"
-              />
+             <TextInput
+             style={styles.input}
+             placeholder="Phone Number"
+             placeholderTextColor="#c5c8d3"
+             keyboardType="phone-pad"
+             value={phoneNumber}
+             onChangeText={setPhoneNumber}
+             />
             </View>
 
             <View style={styles.inputBox}>
@@ -83,12 +153,14 @@ export default function Signup({ navigation }) {
                 color="#b8c7ff"
                 style={styles.inputIcon}
               />
-              <TextInput
-                style={styles.input}
-                placeholder="Password"
-                placeholderTextColor="#c5c8d3"
-                secureTextEntry={true}
-              />
+            <TextInput
+            style={styles.input}
+            placeholder="Password"
+            placeholderTextColor="#c5c8d3"
+            secureTextEntry={true}
+            value={password}
+            onChangeText={setPassword}
+            />
             </View>
 
             <View style={styles.inputBox}>
@@ -98,12 +170,14 @@ export default function Signup({ navigation }) {
                 color="#b8c7ff"
                 style={styles.inputIcon}
               />
-              <TextInput
-                style={styles.input}
-                placeholder="Confirm Password"
-                placeholderTextColor="#c5c8d3"
-                secureTextEntry={true}
-              />
+           <TextInput
+            style={styles.input}
+            placeholder="Confirm Password"
+            placeholderTextColor="#c5c8d3"
+            secureTextEntry={true}
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+           />
             </View>
 
             <View style={styles.termsBox}>
@@ -124,10 +198,15 @@ export default function Signup({ navigation }) {
             </View>
 
             <TouchableOpacity
-              style={styles.button}
-              onPress={() => navigation.navigate("Home")}
+              style={[styles.button, loading && styles.buttonDisabled]}
+              onPress={handleSignup}
+              disabled={loading}
             >
-              <Text style={styles.buttonText}>SIGN UP</Text>
+              {loading ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <Text style={styles.buttonText}>SIGN UP</Text>
+              )}
             </TouchableOpacity>
 
             <View style={styles.loginBox}>
@@ -266,6 +345,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginTop: 50,
+  },
+
+  buttonDisabled: {
+    opacity: 0.7,
   },
 
   buttonText: {
