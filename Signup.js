@@ -148,7 +148,7 @@ export default function Signup({ navigation }) {
               />
               <TextInput
                 style={styles.input}
-                placeholder="Phone Number e.g. 81840688"
+                placeholder="Phone Number"
                 placeholderTextColor="#c5c8d3"
                 keyboardType="number-pad"
                 value={phoneNumber}

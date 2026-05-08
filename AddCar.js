@@ -32,6 +32,8 @@ const carInputAccessoryViewID = "carInputAccessoryView";
 
 export default function AddCar({ navigation }) {
   const [carBrand, setCarBrand] = useState("");
+  const [showBrandList, setShowBrandList] = useState(false);
+
   const [carModel, setCarModel] = useState("");
   const [carColor, setCarColor] = useState("");
   const [carYear, setCarYear] = useState("");
@@ -50,6 +52,12 @@ export default function AddCar({ navigation }) {
 
   function cleanText(text) {
     return text.trim();
+  }
+
+  function handleSelectBrand(brand) {
+    setCarBrand(brand);
+    setShowBrandList(false);
+    Keyboard.dismiss();
   }
 
   async function handleAddCar() {
@@ -75,6 +83,11 @@ export default function AddCar({ navigation }) {
       !mileage
     ) {
       Alert.alert("Missing fields", "Please fill all car details.");
+      return;
+    }
+
+    if (brand !== "Audi" && brand !== "Golf") {
+      Alert.alert("Invalid brand", "Please select either Audi or Golf.");
       return;
     }
 
@@ -161,7 +174,13 @@ export default function AddCar({ navigation }) {
   }
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+    <TouchableWithoutFeedback
+      onPress={() => {
+        Keyboard.dismiss();
+        setShowBrandList(false);
+      }}
+      accessible={false}
+    >
       <KeyboardAvoidingView
         style={styles.mainScreen}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -180,26 +199,55 @@ export default function AddCar({ navigation }) {
           </Text>
 
           <View style={styles.form}>
-            <View style={styles.inputBox}>
-              <Ionicons
-                name="car"
-                color="#cfd2db"
-                size={23}
-                style={styles.icon}
-              />
+            <View style={styles.brandWrapper}>
+              <TouchableOpacity
+                style={styles.inputBox}
+                activeOpacity={0.8}
+                onPress={() => {
+                  Keyboard.dismiss();
+                  setShowBrandList(!showBrandList);
+                }}
+              >
+                <Ionicons
+                  name="car"
+                  color="#cfd2db"
+                  size={23}
+                  style={styles.icon}
+                />
 
-              <TextInput
-                style={styles.textinput}
-                placeholder="Car Brand"
-                placeholderTextColor="#cfd2db"
-                value={carBrand}
-                onChangeText={setCarBrand}
-                returnKeyType="done"
-                onSubmitEditing={Keyboard.dismiss}
-                inputAccessoryViewID={
-                  Platform.OS === "ios" ? carInputAccessoryViewID : undefined
-                }
-              />
+                <Text
+                  style={[
+                    styles.brandText,
+                    !carBrand && styles.placeholderText,
+                  ]}
+                >
+                  {carBrand || "Car Brand"}
+                </Text>
+
+                <Ionicons
+                  name={showBrandList ? "chevron-up" : "chevron-down"}
+                  color="#cfd2db"
+                  size={22}
+                />
+              </TouchableOpacity>
+
+              {showBrandList && (
+                <View style={styles.dropdown}>
+                  <TouchableOpacity
+                    style={styles.dropdownItem}
+                    onPress={() => handleSelectBrand("Audi")}
+                  >
+                    <Text style={styles.dropdownText}>Audi</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.dropdownItem}
+                    onPress={() => handleSelectBrand("Golf")}
+                  >
+                    <Text style={styles.dropdownText}>Golf</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
             </View>
 
             <View style={styles.inputBox}>
@@ -452,6 +500,11 @@ const styles = StyleSheet.create({
     marginTop: 55,
   },
 
+  brandWrapper: {
+    position: "relative",
+    zIndex: 20,
+  },
+
   inputBox: {
     flexDirection: "row",
     alignItems: "center",
@@ -464,6 +517,7 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     height: 42,
     paddingLeft: 20,
+    paddingRight: 15,
   },
 
   icon: {
@@ -477,6 +531,45 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "black",
     paddingVertical: 0,
+  },
+
+  brandText: {
+    flex: 1,
+    fontFamily: "Inter_500Medium",
+    fontSize: 14,
+    color: "black",
+  },
+
+  placeholderText: {
+    color: "#cfd2db",
+  },
+
+  dropdown: {
+    position: "absolute",
+    top: 60,
+    left: 36,
+    width: screenWidth - 72,
+    backgroundColor: "white",
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#d6d6d6",
+    overflow: "hidden",
+    zIndex: 30,
+    elevation: 8,
+  },
+
+  dropdownItem: {
+    height: 44,
+    justifyContent: "center",
+    paddingLeft: 58,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eeeeee",
+  },
+
+  dropdownText: {
+    fontFamily: "Inter_500Medium",
+    fontSize: 15,
+    color: "black",
   },
 
   addButton: {

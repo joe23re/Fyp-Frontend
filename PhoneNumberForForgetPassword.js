@@ -121,7 +121,7 @@ export default function PhoneNumberForForgetPassword({ navigation }) {
           value={phoneNumber}
           onChangeText={handlePhoneChange}
           keyboardType="number-pad"
-          placeholder="81840688"
+          placeholder="71321567"
           placeholderTextColor="#c5c8d3"
           maxLength={8}
           returnKeyType="done"
