@@ -31,7 +31,7 @@ const screenWidth = Dimensions.get("window").width;
 export default function Signin({ navigation }) {
   const [isChecked, setChecked] = useState(false);
 
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
   const [loading, setLoading] = useState(false);
@@ -44,21 +44,21 @@ export default function Signin({ navigation }) {
   });
 
   async function handleSignin() {
-    if (!email || !password) {
-      Alert.alert("Missing fields", "Please enter your email and password.");
+    if (!username || !password) {
+      Alert.alert("Missing fields", "Please enter your username and password.");
       return;
     }
 
     try {
       setLoading(true);
 
-      const data = await login(email, password);
+      const data = await login(username, password);
 
       console.log("Logged in user:", data.user);
 
       Alert.alert("Success", "Signed in successfully.");
-
-      navigation.navigate("Home");
+      navigation.replace("Home");
+      
     } catch (error) {
       console.log("Signin error:", error);
       Alert.alert("Signin failed", error.message);
@@ -89,13 +89,12 @@ export default function Signin({ navigation }) {
       </Text>
 
       <View style={styles.inputBox}>
-        <Ionicons name="mail" color={"#B0BFF8"} size={25} />
+        <Ionicons name="person" color={"#B0BFF8"} size={25} />
         <TextInput
           style={styles.input}
-          placeholder="Email Address"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
+          placeholder="Username"
+          value={username}
+          onChangeText={setUsername}
           autoCapitalize="none"
         />
       </View>

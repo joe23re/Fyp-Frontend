@@ -2,11 +2,17 @@ import {
   View,
   Text,
   StyleSheet,
-  Button,
   TouchableOpacity,
   TextInput,
   Image,
   ScrollView,
+  Alert,
+  ActivityIndicator,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableWithoutFeedback,
+  InputAccessoryView,
 } from "react-native";
 
 import { Ionicons } from "@expo/vector-icons";
@@ -16,60 +22,174 @@ import {
   Inter_500Medium,
   useFonts,
 } from "@expo-google-fonts/inter";
+import { useState } from "react";
 
-export default function ResetPassword({ navigation }) {
+import { resetForgotPassword } from "./src/api/forgotPassword";
+
+const passwordInputAccessoryViewID = "passwordInputAccessoryView";
+
+export default function ResetPassword({ navigation, route }) {
+  const phoneNumber = route?.params?.phoneNumber || "";
+  const code = route?.params?.code || "";
+
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
   const [loadFonts] = useFonts({
     Inter_600SemiBold,
     Inter_500Medium,
   });
+
+  async function handleSavePassword() {
+    Keyboard.dismiss();
+
+    if (!password || !confirmPassword) {
+      Alert.alert("Missing fields", "Please enter and confirm your password.");
+      return;
+    }
+
+    if (password.length < 6) {
+      Alert.alert("Invalid password", "Password must be at least 6 characters.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      Alert.alert("Password error", "Passwords do not match.");
+      return;
+    }
+
+    if (!phoneNumber || !code) {
+      Alert.alert(
+        "Reset error",
+        "Missing verification data. Please verify your code again."
+      );
+      navigation.navigate("PhoneNumberForForgetPassword");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const data = await resetForgotPassword(phoneNumber, code, password);
+
+      console.log("Password reset:", data);
+
+      Alert.alert(
+        "Success",
+        "Password changed successfully. Please sign in with your new password.",
+        [
+          {
+            text: "OK",
+            onPress: () => navigation.navigate("Signin"),
+          },
+        ]
+      );
+    } catch (error) {
+      console.log("Reset password error:", error);
+      Alert.alert("Reset failed", error.message);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   if (!loadFonts) {
     return null;
   }
 
   return (
-    <>
-      <ScrollView>
-        <View style={styles.container}>
-          <TouchableOpacity
-            style={styles.resetpassbutton}
-            onPress={() => navigation.goBack()}
-          >
-            <View style={styles.backContent}>
-              <Ionicons
-                style={styles.arrow}
-                name="arrow-back-outline"
-                size={25}
-              />
-              <Text style={styles.resetpasstext}>Reset Password</Text>
-            </View>
-          </TouchableOpacity>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <KeyboardAvoidingView
+        style={styles.mainScreen}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
+        <ScrollView keyboardShouldPersistTaps="handled">
+          <View style={styles.container}>
+            <TouchableOpacity
+              style={styles.resetpassbutton}
+              onPress={() => {
+                Keyboard.dismiss();
+                navigation.goBack();
+              }}
+            >
+              <View style={styles.backContent}>
+                <Ionicons name="arrow-back-outline" size={25} />
+                <Text style={styles.resetpasstext}>Reset Password</Text>
+              </View>
+            </TouchableOpacity>
 
-          <Image source={resetPassword} style={styles.resetpassimg} />
+            <Image source={resetPassword} style={styles.resetpassimg} />
 
-          <Text style={styles.text}>
-            Please enter your phone number to receive verification code
-          </Text>
+            <Text style={styles.text}>
+              Please enter your new password
+            </Text>
 
-          <Text style={styles.labeltext}>Password</Text>
-          <TextInput style={styles.textinput} secureTextEntry={true} />
+            <Text style={styles.labeltext}>Password</Text>
+            <TextInput
+              style={styles.textinput}
+              secureTextEntry={true}
+              value={password}
+              onChangeText={setPassword}
+              placeholder="New Password"
+              placeholderTextColor="#c5c8d3"
+              returnKeyType="done"
+              blurOnSubmit={true}
+              onSubmitEditing={Keyboard.dismiss}
+              inputAccessoryViewID={
+                Platform.OS === "ios" ? passwordInputAccessoryViewID : undefined
+              }
+            />
 
-          <Text style={styles.labeltext}>Confirm Password</Text>
-          <TextInput style={styles.textinput} secureTextEntry={true} />
+            <Text style={styles.labeltext}>Confirm Password</Text>
+            <TextInput
+              style={styles.textinput}
+              secureTextEntry={true}
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              placeholder="Confirm New Password"
+              placeholderTextColor="#c5c8d3"
+              returnKeyType="done"
+              blurOnSubmit={true}
+              onSubmitEditing={Keyboard.dismiss}
+              inputAccessoryViewID={
+                Platform.OS === "ios" ? passwordInputAccessoryViewID : undefined
+              }
+            />
 
-          <TouchableOpacity
-            style={styles.savepassbutton}
-            onPress={() => navigation.navigate("Home")}
-          >
-            <Text style={styles.buttontext}>Save Password</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    </>
+            {Platform.OS === "ios" && (
+              <InputAccessoryView nativeID={passwordInputAccessoryViewID}>
+                <View style={styles.keyboardToolbar}>
+                  <TouchableOpacity onPress={Keyboard.dismiss}>
+                    <Text style={styles.doneText}>Done</Text>
+                  </TouchableOpacity>
+                </View>
+              </InputAccessoryView>
+            )}
+
+            <TouchableOpacity
+              style={[styles.savepassbutton, loading && styles.buttonDisabled]}
+              onPress={handleSavePassword}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <Text style={styles.buttontext}>Save Password</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </TouchableWithoutFeedback>
   );
 }
 
 const styles = StyleSheet.create({
+  mainScreen: {
+    flex: 1,
+    backgroundColor: "white",
+  },
+
   container: {
     backgroundColor: "white",
     paddingBottom: 80,
@@ -96,8 +216,6 @@ const styles = StyleSheet.create({
   resetpasstext: {
     textAlign: "center",
   },
-
-  arrow: {},
 
   resetpassimg: {
     width: 270,
@@ -132,6 +250,7 @@ const styles = StyleSheet.create({
     height: 60,
     paddingLeft: 20,
     marginBottom: 18,
+    fontSize: 16,
   },
 
   savepassbutton: {
@@ -141,13 +260,34 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginLeft: 45,
     marginTop: 30,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  buttonDisabled: {
+    opacity: 0.7,
   },
 
   buttontext: {
     color: "white",
     textAlign: "center",
-    paddingTop: 14,
     fontFamily: "Inter_500Medium",
     fontSize: 23,
+  },
+
+  keyboardToolbar: {
+    height: 44,
+    backgroundColor: "#f2f2f2",
+    justifyContent: "center",
+    alignItems: "flex-end",
+    paddingRight: 18,
+    borderTopWidth: 1,
+    borderTopColor: "#dcdcdc",
+  },
+
+  doneText: {
+    color: "#2D7EEB",
+    fontSize: 17,
+    fontWeight: "600",
   },
 });

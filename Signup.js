@@ -42,46 +42,56 @@ export default function Signup({ navigation }) {
     loadLogo();
   }, []);
 
+  function handlePhoneChange(text) {
+    const onlyDigits = text.replace(/[^0-9]/g, "");
+    setPhoneNumber(onlyDigits.slice(0, 8));
+  }
+
   async function handleSignup() {
-  if (!username || !email || !phoneNumber || !password || !confirmPassword) {
-    Alert.alert("Missing fields", "Please fill all required fields.");
-    return;
+    if (!username || !email || !phoneNumber || !password || !confirmPassword) {
+      Alert.alert("Missing fields", "Please fill all required fields.");
+      return;
+    }
+
+    if (phoneNumber.length !== 8) {
+      Alert.alert(
+        "Invalid phone number",
+        "Please enter your 8 digit phone number without +961."
+      );
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      Alert.alert("Password error", "Passwords do not match.");
+      return;
+    }
+
+    if (!checked) {
+      Alert.alert("Terms required", "Please agree to the Terms and Conditions.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const data = await register(username, email, phoneNumber, password);
+
+      console.log("Registered user:", data.user);
+
+      Alert.alert("Success", "Account created successfully.");
+      navigation.navigate("Signin");
+    } catch (error) {
+      console.log("Signup error:", error);
+      Alert.alert("Signup failed", error.message);
+    } finally {
+      setLoading(false);
+    }
   }
 
-  if (password !== confirmPassword) {
-    Alert.alert("Password error", "Passwords do not match.");
-    return;
+  if (!logoReady) {
+    return null;
   }
 
-  if (!checked) {
-    Alert.alert("Terms required", "Please agree to the Terms and Conditions.");
-    return;
-  }
-
-  try {
-    setLoading(true);
-
-    console.log("Before register:", {
-      username,
-      email,
-      phoneNumber,
-      password,
-      confirmPassword,
-    });
-
-    const data = await register(username, email, phoneNumber, password);
-
-    console.log("Registered user:", data.user);
-
-    Alert.alert("Success", "Account created successfully.");
-    navigation.navigate("Home");
-  } catch (error) {
-    console.log("Signup error:", error);
-    Alert.alert("Signup failed", error.message);
-  } finally {
-    setLoading(false);
-  }
-}
   return (
     <SafeAreaView style={styles.mainScreen}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -103,11 +113,11 @@ export default function Signup({ navigation }) {
                 style={styles.inputIcon}
               />
               <TextInput
-              style={styles.input}
-              placeholder="Username"
-              placeholderTextColor="#c5c8d3"
-              value={username}
-              onChangeText={setUsername}
+                style={styles.input}
+                placeholder="Username"
+                placeholderTextColor="#c5c8d3"
+                value={username}
+                onChangeText={setUsername}
               />
             </View>
 
@@ -118,15 +128,15 @@ export default function Signup({ navigation }) {
                 color="#b8c7ff"
                 style={styles.inputIcon}
               />
-             <TextInput
-             style={styles.input}
-             placeholder="Email Address"
-             placeholderTextColor="#c5c8d3"
-             value={email}
-             onChangeText={setEmail}
-             keyboardType="email-address"
-             autoCapitalize="none"
-             />
+              <TextInput
+                style={styles.input}
+                placeholder="Email Address"
+                placeholderTextColor="#c5c8d3"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
             </View>
 
             <View style={styles.inputBox}>
@@ -136,14 +146,15 @@ export default function Signup({ navigation }) {
                 color="#b8c7ff"
                 style={styles.inputIcon}
               />
-             <TextInput
-             style={styles.input}
-             placeholder="Phone Number"
-             placeholderTextColor="#c5c8d3"
-             keyboardType="phone-pad"
-             value={phoneNumber}
-             onChangeText={setPhoneNumber}
-             />
+              <TextInput
+                style={styles.input}
+                placeholder="Phone Number e.g. 81840688"
+                placeholderTextColor="#c5c8d3"
+                keyboardType="number-pad"
+                value={phoneNumber}
+                onChangeText={handlePhoneChange}
+                maxLength={8}
+              />
             </View>
 
             <View style={styles.inputBox}>
@@ -153,14 +164,14 @@ export default function Signup({ navigation }) {
                 color="#b8c7ff"
                 style={styles.inputIcon}
               />
-            <TextInput
-            style={styles.input}
-            placeholder="Password"
-            placeholderTextColor="#c5c8d3"
-            secureTextEntry={true}
-            value={password}
-            onChangeText={setPassword}
-            />
+              <TextInput
+                style={styles.input}
+                placeholder="Password"
+                placeholderTextColor="#c5c8d3"
+                secureTextEntry={true}
+                value={password}
+                onChangeText={setPassword}
+              />
             </View>
 
             <View style={styles.inputBox}>
@@ -170,14 +181,14 @@ export default function Signup({ navigation }) {
                 color="#b8c7ff"
                 style={styles.inputIcon}
               />
-           <TextInput
-            style={styles.input}
-            placeholder="Confirm Password"
-            placeholderTextColor="#c5c8d3"
-            secureTextEntry={true}
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-           />
+              <TextInput
+                style={styles.input}
+                placeholder="Confirm Password"
+                placeholderTextColor="#c5c8d3"
+                secureTextEntry={true}
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+              />
             </View>
 
             <View style={styles.termsBox}>

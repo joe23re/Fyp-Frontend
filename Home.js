@@ -18,19 +18,61 @@ import CarImage from "./assets/car-blue.png";
 import MapImage from "./assets/maps.png";
 import HeaderBg from "./assets/homeheader.png";
 
+import { getAuthUser } from "./src/api/auth";
+import { getSelectedVehicle } from "./src/api/vehicles";
+
 const screenWidth = Dimensions.get("window").width;
 
 export default function Home({ navigation }) {
   const [imagesReady, setImagesReady] = useState(false);
+  const [username, setUsername] = useState("");
+  const [selectedVehicle, setSelectedVehicle] = useState(null);
+
+  async function loadHomeData() {
+    try {
+      const user = await getAuthUser();
+      const vehicle = await getSelectedVehicle();
+
+      if (user && user.username) {
+        setUsername(user.username);
+      } else {
+        setUsername("");
+      }
+
+      setSelectedVehicle(vehicle);
+    } catch (error) {
+      console.log("Home load error:", error);
+    }
+  }
 
   useEffect(() => {
-    async function loadImages() {
-      await Asset.loadAsync([CarImage, MapImage, HeaderBg]);
-      setImagesReady(true);
+    async function prepareHome() {
+      try {
+        await Asset.loadAsync([CarImage, MapImage, HeaderBg]);
+        await loadHomeData();
+      } catch (error) {
+        console.log("Home prepare error:", error);
+      } finally {
+        setImagesReady(true);
+      }
     }
 
-    loadImages();
-  }, []);
+    prepareHome();
+
+    const unsubscribe = navigation.addListener("focus", () => {
+      loadHomeData();
+    });
+
+    return unsubscribe;
+  }, [navigation]);
+
+  function getSelectedCarName() {
+    if (!selectedVehicle) {
+      return "No car selected";
+    }
+
+    return `${selectedVehicle.brand} ${selectedVehicle.model}`;
+  }
 
   if (!imagesReady) {
     return <View style={styles.mainScreen} />;
@@ -48,10 +90,14 @@ export default function Home({ navigation }) {
             resizeMode="stretch"
           >
             <View style={styles.headerContent}>
-              <View>
+              <View style={styles.headerTextBox}>
                 <Text style={styles.greeting}>Good Morning,</Text>
-                <Text style={styles.name}>Joe-Habib</Text>
-                <Text style={styles.carName}>Audi R8</Text>
+
+                <Text style={styles.name}>{username || "User"}</Text>
+
+                <Text style={styles.selectedCarText}>
+                  {getSelectedCarName()}
+                </Text>
               </View>
 
               <TouchableOpacity style={styles.notificationButton}>
@@ -91,11 +137,9 @@ export default function Home({ navigation }) {
                 </View>
 
                 <View style={styles.statusBottom}>
-                  <View style={styles.healthyBadge}>
-                    <Text style={styles.healthyText}>HEALTHY</Text>
+                  <View style={styles.noneBadge}>
+                    <Text style={styles.noneText}>NONE</Text>
                   </View>
-
-                  <Ionicons name="checkmark-circle" size={22} color="#4cca42" />
                 </View>
               </View>
 
@@ -109,6 +153,7 @@ export default function Home({ navigation }) {
                 </View>
 
                 <Text style={styles.historyTitle}>History</Text>
+
                 <Text style={styles.historySubtitle}>
                   Check your diagnostic{"\n"}history
                 </Text>
@@ -148,7 +193,7 @@ export default function Home({ navigation }) {
 
         <TouchableOpacity
           style={styles.navItem}
-          onPress={() => navigation.navigate("AddCar")}
+          onPress={() => navigation.navigate("MyCars")}
         >
           <FontAwesome5 name="car" size={17} color="black" />
           <Text style={styles.navText}>Cars</Text>
@@ -186,10 +231,14 @@ const styles = StyleSheet.create({
   },
 
   headerContent: {
-    paddingTop: 150,
+    paddingTop: 135,
     paddingHorizontal: 100,
     flexDirection: "row",
     justifyContent: "space-between",
+  },
+
+  headerTextBox: {
+    maxWidth: 190,
   },
 
   greeting: {
@@ -205,10 +254,11 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
 
-  carName: {
-    color: "#0051ff",
-    fontSize: 15,
-    marginTop: 22,
+  selectedCarText: {
+    fontSize: 14,
+    fontWeight: "800",
+    color: "#2d7eff",
+    marginTop: 8,
   },
 
   notificationButton: {
@@ -337,19 +387,19 @@ const styles = StyleSheet.create({
   statusBottom: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
+    justifyContent: "flex-start",
     marginTop: 25,
   },
 
-  healthyBadge: {
-    backgroundColor: "#eefbe8",
+  noneBadge: {
+    backgroundColor: "#f1f2f6",
     borderRadius: 18,
-    paddingHorizontal: 15,
+    paddingHorizontal: 18,
     paddingVertical: 5,
   },
 
-  healthyText: {
-    color: "#35c53a",
+  noneText: {
+    color: "#7a7d86",
     fontSize: 9,
     fontWeight: "800",
   },
@@ -435,18 +485,6 @@ const styles = StyleSheet.create({
     width: "58%",
     height: "100%",
     resizeMode: "cover",
-  },
-
-  locationCircle: {
-    position: "absolute",
-    right: 55,
-    top: 38,
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: "#2077ff",
-    justifyContent: "center",
-    alignItems: "center",
   },
 
   bottomNav: {
