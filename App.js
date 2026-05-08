@@ -13,6 +13,7 @@ import Profile from './Profile';
 import AccountInformation from './AccountInformation';
 import EditProfile from './EditProfile';
 import MyCars from './MyCars';
+import CarInformation from './CarInformation';
 import { useEffect } from 'react';
 import{ useFonts, Outfit_700Bold} from "@expo-google-fonts/outfit";
 import { LinearGradient } from 'expo-linear-gradient';
@@ -68,6 +69,8 @@ export default function App() {
         <Stack.Screen name='AccountInformation' component={AccountInformation} options={{headerShown:false}}></Stack.Screen>
         <Stack.Screen name='EditProfile' component={EditProfile} options={{headerShown:false}}></Stack.Screen>
         <Stack.Screen name='MyCars' component={MyCars} options={{headerShown:false}}></Stack.Screen>
+        <Stack.Screen name='CarInformation' component={CarInformation} options={{headerShown:false}}></Stack.Screen>
+
 
 
                 

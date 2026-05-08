@@ -147,11 +147,17 @@ export default function MyCars({ navigation }) {
                         Plate number: {vehicle.plate_number}
                       </Text>
 
-                      <TouchableOpacity style={styles.checkButton}>
-                        <Text style={styles.checkButtonText}>
-                          Check Car Info
-                        </Text>
-                      </TouchableOpacity>
+                      <TouchableOpacity
+                      style={styles.checkButton}
+                      onPress={(event) => {
+                        event.stopPropagation();
+                        navigation.navigate("CarInformation", {
+                        vehicle,
+                    });
+                    }}>
+                        <Text style={styles.checkButtonText}>Check Car Info</Text>
+                        </TouchableOpacity>
+                        
                     </View>
 
                     <TouchableOpacity

@@ -9,6 +9,7 @@ import {
   ScrollView,
   Dimensions,
   StatusBar,
+  Alert
 } from "react-native";
 
 import { Ionicons, FontAwesome5, MaterialIcons } from "@expo/vector-icons";
@@ -66,17 +67,34 @@ export default function Home({ navigation }) {
     return unsubscribe;
   }, [navigation]);
 
+
   function getSelectedCarName() {
     if (!selectedVehicle) {
-      return "No car selected";
+      return null;
     }
 
     return `${selectedVehicle.brand} ${selectedVehicle.model}`;
   }
 
-  if (!imagesReady) {
-    return <View style={styles.mainScreen} />;
+
+
+  async function handleOpenHistory() {
+  try {
+    const vehicle = await getSelectedVehicle();
+
+    if (!vehicle) {
+      Alert.alert("No car selected", "Please select a car first.");
+      return;
+    }
+
+    navigation.navigate("CarInformation", {
+      vehicle,
+    });
+  } catch (error) {
+    console.log("Open history error:", error);
+    Alert.alert("No car found", "Could not open car information.");
   }
+}
 
   return (
     <View style={styles.mainScreen}>
@@ -143,7 +161,7 @@ export default function Home({ navigation }) {
                 </View>
               </View>
 
-              <TouchableOpacity style={styles.historyCard}>
+              <TouchableOpacity style={styles.historyCard} onPress={handleOpenHistory}>
                 <View style={styles.historyTop}>
                   <View style={styles.iconBox}>
                     <MaterialIcons name="history" size={17} color="#8faeff" />
@@ -258,7 +276,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "800",
     color: "#2d7eff",
-    marginTop: 8,
+    marginTop: 15,
   },
 
   notificationButton: {
